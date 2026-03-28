@@ -1,17 +1,20 @@
-import { type SQLiteDatabase } from 'expo-sqlite';
-import { getTableCreationQueries } from './schema';
+import { drizzle } from 'drizzle-orm/expo-sqlite';
+import { openDatabaseSync } from 'expo-sqlite';
 
-export const migrateDbIfNeeded = async (db: SQLiteDatabase) => {
-  try {
-    const queries = getTableCreationQueries();
-    
-    // Execute all table creation statements synchronously before app renders
-    queries.forEach((query: string) => {
-      db.execSync(query);
-    });
-    
-    console.log('Database schema checked/initialized successfully');
-  } catch (error) {
-    console.error('Failed to initialize database schema:', error);
-  }
+import * as usersSchema from './users';
+import * as habitsSchema from './habits';
+import * as groupsSchema from './groups';
+import * as reviewsSchema from './reviews';
+import * as syncSchema from './sync';
+
+export const schema = {
+  ...usersSchema,
+  ...habitsSchema,
+  ...groupsSchema,
+  ...reviewsSchema,
+  ...syncSchema,
 };
+
+const expoDb = openDatabaseSync('commit_together.db');
+
+export const db = drizzle(expoDb, { schema });
